@@ -121,6 +121,15 @@ The switch in the header (also in the settings drawer) toggles between the two w
 
 The counts beside each label are live: arrivals matching the corridor, and total aircraft in range.
 
+### Desktop alerts for special flights
+
+Settings → **Desktop alerts for special flights** asks the browser for notification permission, then watches every poll for notable traffic that will pass near the observation point:
+
+- Always: Airbus A380 and Boeing 747 family
+- Also: A340s, Beluga / Dreamlifter, An-124 / An-225, rare historic types, VIP / state callsigns, and military transports
+
+Each alert includes type and airline, altitude, time to overhead, estimated time to Heathrow, and ground speed. The same aircraft is not re-alerted for two hours. Alerts keep working in Arrivals-only view — the scan still includes context traffic for this purpose.
+
 ### Aircraft artwork
 
 Silhouettes are original geometry generated from per-family proportions in `lib/aviation/airframe-profiles.ts`, resolved by ICAO type code. An A380 is drawn double-decked with four engines, a 747 carries its forward upper deck, a 777 is long with oversized nacelles, and a CRJ gets rear-mounted engines and a T-tail. Unknown types fall back to the family prefix, then to the broad visual category. The same proportions drive both the side profile in the hero panel and the plan-view map markers.

@@ -10,6 +10,7 @@ import type {
 } from "@/lib/aviation/types";
 import { getPublicDefaults, SETTINGS_STORAGE_KEY } from "@/lib/config/public";
 import { FOCUS_SELECTION } from "@/lib/config/scoring";
+import { maybeNotifyNotableAircraft } from "@/lib/notifications/notable-alerts";
 
 export type TrailPoint = { lat: number; lon: number; t: number };
 export type TrailsMap = Record<string, TrailPoint[]>;
@@ -145,7 +146,14 @@ function createStore() {
 
     const params = new URLSearchParams();
     if (state.settings.forceDemo) params.set("demo", "true");
-    if (state.settings.trafficView === "all") params.set("context", "true");
+    // Notifications need the full nearby scan so a Beluga / VIP overflight
+    // still alerts even when the UI is filtered to Heathrow arrivals only.
+    if (
+      state.settings.trafficView === "all" ||
+      state.settings.desktopNotifications
+    ) {
+      params.set("context", "true");
+    }
     // Only send coords if user overrode defaults (still server-validated)
     params.set("lat", String(state.settings.observerLat));
     params.set("lon", String(state.settings.observerLon));
@@ -179,9 +187,21 @@ function createStore() {
   };
 
   const applyResponse = (data: NearbyAircraftResponse) => {
-    const { focus, focusIcao24 } = resolveFocus(data.aircraft, data.focusIcao24);
+    // Keep the full scan for notifications / counts; filter what the UI shows.
+    const displayAircraft =
+      state.settings.trafficView === "all"
+        ? data.aircraft
+        : data.aircraft.filter((a) => a.relevance === "arrival");
+
+    const { focus, focusIcao24 } = resolveFocus(displayAircraft, data.focusIcao24);
+
+    maybeNotifyNotableAircraft(data.aircraft, {
+      enabled: state.settings.desktopNotifications,
+      units: state.settings.units,
+    });
+
     setState({
-      aircraft: data.aircraft,
+      aircraft: displayAircraft,
       focus,
       focusIcao24,
       providerStatus: data.providerStatus,
@@ -192,7 +212,7 @@ function createStore() {
       loading: false,
       error: null,
       offline: false,
-      trails: updateTrails(data.aircraft),
+      trails: updateTrails(displayAircraft),
       scannedCount: data.scannedCount ?? data.aircraft.length,
       arrivalCount:
         data.arrivalCount ??
@@ -237,6 +257,32 @@ function createStore() {
         pollTimer = setInterval(() => void fetchAircraft(), settings.refreshIntervalMs);
       }
       void fetchAircraft();
+    },
+    async enableDesktopNotifications(): Promise<"granted" | "denied" | "unsupported" | "default"> {
+      const { requestNotificationPermission } = await import(
+        "@/lib/notifications/notable-alerts"
+      );
+      const permission = await requestNotificationPermission();
+      if (permission === "granted") {
+        const settings = { ...state.settings, desktopNotifications: true };
+        setState({ settings });
+        try {
+          localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+        } catch {
+          /* ignore */
+        }
+        void fetchAircraft();
+      }
+      return permission;
+    },
+    disableDesktopNotifications() {
+      const settings = { ...state.settings, desktopNotifications: false };
+      setState({ settings });
+      try {
+        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+      } catch {
+        /* ignore */
+      }
     },
     resetSettings() {
       const settings = getPublicDefaults();

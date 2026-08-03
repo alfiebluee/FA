@@ -180,6 +180,8 @@ export function FinalApproachApp() {
         onClose={() => api.setSettingsOpen(false)}
         onChange={(p) => api.setSettings(p)}
         onReset={() => api.resetSettings()}
+        onEnableNotifications={() => api.enableDesktopNotifications()}
+        onDisableNotifications={() => api.disableDesktopNotifications()}
       />
     </div>
   );

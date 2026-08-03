@@ -82,6 +82,18 @@ const MOCK_TRACKS: MockTrack[] = [
     cycleSeconds: 350,
   },
   {
+    icao24: "400007",
+    callsign: "BAW11",
+    registration: "G-CIVB",
+    aircraftTypeCode: "B744",
+    aircraftDescription: "Boeing 747-400",
+    category: "A5",
+    role: "arrival",
+    startOffsetKm: 52,
+    groundSpeedKnots: 270,
+    cycleSeconds: 340,
+  },
+  {
     icao24: "400005",
     callsign: "EZY8321",
     registration: "G-UZHD",

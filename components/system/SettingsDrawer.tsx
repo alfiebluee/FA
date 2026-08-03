@@ -4,6 +4,10 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import type { DisplaySettings, TrafficView } from "@/lib/aviation/types";
+import {
+  getNotificationPermission,
+  type NotificationPermissionState,
+} from "@/lib/notifications/notable-alerts";
 
 type Props = {
   open: boolean;
@@ -11,10 +15,25 @@ type Props = {
   onClose: () => void;
   onChange: (partial: Partial<DisplaySettings>) => void;
   onReset: () => void;
+  onEnableNotifications: () => Promise<NotificationPermissionState>;
+  onDisableNotifications: () => void;
 };
 
-export function SettingsDrawer({ open, settings, onClose, onChange, onReset }: Props) {
+export function SettingsDrawer({
+  open,
+  settings,
+  onClose,
+  onChange,
+  onReset,
+  onEnableNotifications,
+  onDisableNotifications,
+}: Props) {
   const [coordsUnlocked, setCoordsUnlocked] = useState(false);
+  const [permissionBusy, setPermissionBusy] = useState(false);
+  // Bump after an async permission change so we re-read Notification.permission
+  const [permissionEpoch, setPermissionEpoch] = useState(0);
+  void permissionEpoch;
+  const permission = getNotificationPermission();
 
   return (
     <AnimatePresence>
@@ -144,6 +163,28 @@ export function SettingsDrawer({ open, settings, onClose, onChange, onReset }: P
                   value={settings.trafficView}
                   onChange={(trafficView) => onChange({ trafficView })}
                   radiusNm={settings.searchRadiusNm}
+                />
+                <Toggle
+                  label="Desktop alerts for special flights"
+                  hint={
+                    permission === "denied"
+                      ? "Notifications are blocked in the browser. Allow them for this site in system / browser settings, then try again."
+                      : permission === "unsupported"
+                        ? "This browser does not support desktop notifications."
+                        : "Alerts for 747s, A380s, Belugas, An-124s, VIP and military overflights near the observation point — with altitude and timing."
+                  }
+                  checked={settings.desktopNotifications && permission === "granted"}
+                  disabled={permission === "unsupported" || permissionBusy}
+                  onChange={(v) => {
+                    if (!v) {
+                      onDisableNotifications();
+                      return;
+                    }
+                    setPermissionBusy(true);
+                    void onEnableNotifications()
+                      .then(() => setPermissionEpoch((n) => n + 1))
+                      .finally(() => setPermissionBusy(false));
+                  }}
                 />
                 <Toggle
                   label="Show projected paths"
@@ -315,14 +356,20 @@ function Toggle({
   hint,
   checked,
   onChange,
+  disabled = false,
 }: {
   label: string;
   hint?: string;
   checked: boolean;
   onChange: (v: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
-    <label className="flex cursor-pointer items-start justify-between gap-3 rounded-[var(--radius-sm)] border border-[var(--line)] px-3 py-2">
+    <label
+      className={`flex items-start justify-between gap-3 rounded-[var(--radius-sm)] border border-[var(--line)] px-3 py-2 ${
+        disabled ? "cursor-not-allowed opacity-55" : "cursor-pointer"
+      }`}
+    >
       <span className="min-w-0">
         <span className="block text-[var(--text-primary)]">{label}</span>
         {hint && (
@@ -334,6 +381,7 @@ function Toggle({
       <input
         type="checkbox"
         checked={checked}
+        disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
         className="peer sr-only"
       />

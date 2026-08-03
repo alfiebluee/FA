@@ -135,4 +135,9 @@ export type DisplaySettings = {
   units: UnitsMode;
   clock: ClockMode;
   forceDemo: boolean;
+  /**
+   * Desktop notifications for 747 / A380 overflights and other notable
+   * special flights (Beluga, An-124, VIP, military, rare quads).
+   */
+  desktopNotifications: boolean;
 };

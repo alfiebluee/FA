@@ -19,6 +19,7 @@ export function getPublicDefaults(): DisplaySettings {
     units: "aviation",
     clock: "24h",
     forceDemo: false,
+    desktopNotifications: false,
   };
 }
 
