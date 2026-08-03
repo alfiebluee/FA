@@ -1,26 +1,366 @@
 @import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
 
+/*
+ * FINAL APPROACH — brand system
+ *
+ * Ink        near-black field, cool blue undertone
+ * Signal     ice-blue, reserved for live aviation state
+ * Caution    amber, degraded data only
+ * Fault      red, errors only
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink-000: #04070a;
+  --ink-050: #060a0e;
+  --ink-100: #090f14;
+  --ink-200: #0d151c;
+  --ink-300: #131e27;
+  --ink-400: #1b2934;
+
+  --line-soft: rgba(151, 205, 226, 0.08);
+  --line: rgba(151, 205, 226, 0.14);
+  --line-strong: rgba(151, 205, 226, 0.26);
+
+  --text-primary: #f2f8fa;
+  --text-secondary: #8fa5b1;
+  --text-tertiary: #566975;
+
+  --signal: #6ee7f2;
+  --signal-bright: #a8f4fd;
+  --signal-deep: #1b6b78;
+  --signal-glow: rgba(110, 231, 242, 0.35);
+
+  --caution: #f5b942;
+  --fault: #ff5f57;
+  --affirm: #78e6b0;
+
+  /* Legacy aliases retained so existing components keep resolving */
+  --background: var(--ink-000);
+  --surface: var(--ink-100);
+  --surface-raised: var(--ink-200);
+  --accent: var(--signal);
+  --accent-strong: var(--signal-bright);
+  --warning: var(--caution);
+  --error: var(--fault);
+  --success: var(--affirm);
+
+  --radius-sm: 3px;
+  --radius: 6px;
+  --radius-lg: 12px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-ink: var(--ink-000);
+  --color-surface: var(--ink-100);
+  --color-surface-raised: var(--ink-200);
+  --color-line: var(--line);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-signal: var(--signal);
+  --color-signal-bright: var(--signal-bright);
+  --color-caution: var(--caution);
+  --color-fault: var(--fault);
+  --color-affirm: var(--affirm);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--ink-000);
+  color: var(--text-primary);
+  overscroll-behavior: none;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Typography primitives ---- */
+
+.type-display {
+  font-size: clamp(2.75rem, 5.6vw, 5.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  font-weight: 500;
+}
+
+.type-headline {
+  font-size: clamp(1.5rem, 2.2vw, 2.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+
+.type-eyebrow {
+  font-size: 0.625rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.type-label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.type-metric {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.font-mono,
+.tabular-nums,
+.type-metric {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Surfaces ---- */
+
+.pane {
+  background: linear-gradient(
+    180deg,
+    rgba(13, 21, 28, 0.82) 0%,
+    rgba(6, 10, 14, 0.88) 100%
+  );
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+.hairline-grid {
+  background-image:
+    linear-gradient(rgba(151, 205, 226, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(151, 205, 226, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.scrim-bottom {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(4, 7, 10, 0.55) 45%,
+    rgba(4, 7, 10, 0.94) 100%
+  );
+}
+
+.scrim-left {
+  background: linear-gradient(
+    90deg,
+    rgba(4, 7, 10, 0.97) 0%,
+    rgba(4, 7, 10, 0.82) 38%,
+    rgba(4, 7, 10, 0.15) 72%,
+    transparent 100%
+  );
+}
+
+.vignette {
+  background: radial-gradient(
+    ellipse 120% 100% at 50% 45%,
+    transparent 35%,
+    rgba(4, 7, 10, 0.72) 100%
+  );
+}
+
+/* ---- Form controls ---- */
+
+.field-input {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--ink-050);
+  padding: 0.5rem 0.65rem;
+  color: var(--text-primary);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.875rem;
+}
+
+.field-input:focus {
+  outline: 2px solid var(--signal);
+  outline-offset: 1px;
+}
+
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---- Map markers ---- */
+
+.aircraft-map-marker {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  line-height: 0;
+  will-change: transform;
+}
+
+.observer-radar-marker {
+  width: 88px;
+  height: 88px;
+  pointer-events: none;
+}
+
+.observer-radar-rings {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+
+.observer-radar-rings span {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(110, 231, 242, 0.22);
+  border-radius: 50%;
+}
+
+.observer-radar-rings span:nth-child(2) {
+  inset: 20%;
+  border-color: rgba(110, 231, 242, 0.16);
+}
+
+.observer-radar-rings span:nth-child(3) {
+  inset: 40%;
+  border-color: rgba(110, 231, 242, 0.12);
+}
+
+.observer-radar-rings b {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 10px var(--signal-glow);
+}
+
+.observer-radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(110, 231, 242, 0.26) 44deg,
+    transparent 76deg
+  );
+  opacity: 0.5;
+  animation: radar-sweep 6s linear infinite;
+}
+
+.observer-radar-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(110, 231, 242, 0.5);
+  animation: radar-pulse 3.4s var(--ease-out-expo) infinite;
+}
+
+.maplibregl-ctrl-attrib {
+  background: rgba(4, 7, 10, 0.6) !important;
+  color: var(--text-tertiary) !important;
+  font-size: 9px !important;
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--text-secondary) !important;
+}
+
+.maplibregl-canvas {
+  outline: none;
+}
+
+/* ---- Motion ---- */
+
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes signal-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes trace-in {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.breathe {
+  animation: signal-breathe 2.8s var(--ease-in-out-soft) infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .observer-radar-sweep,
+  .observer-radar-pulse {
+    animation: none;
+    opacity: 0.22;
+  }
+}
+
+::selection {
+  background: rgba(110, 231, 242, 0.24);
+  color: var(--text-primary);
 }
