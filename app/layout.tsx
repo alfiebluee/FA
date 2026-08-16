@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "FINAL APPROACH",
   description:
-    "Live Heathrow arrival display for a North London observation point. Approximate aviation data — not for navigation.",
+    "Live Heathrow arrival display for Alexandra Park, north London. Approximate aviation data — not for navigation.",
 };
 
 export const viewport: Viewport = {

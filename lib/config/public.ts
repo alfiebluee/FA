@@ -24,7 +24,7 @@ export function getPublicDefaults(): DisplaySettings {
 }
 
 export const PUBLIC_META = {
-  observationPointLabel: "NORTH LONDON OBSERVATION POINT",
+  observationPointLabel: "ALEXANDRA PARK",
   targetAirportIcao: process.env.NEXT_PUBLIC_TARGET_AIRPORT ?? "EGLL",
   targetAirportName: HEATHROW.name,
   mapStyleUrl: process.env.NEXT_PUBLIC_MAP_STYLE_URL ?? DEFAULTS.mapStyleUrl,
@@ -33,4 +33,4 @@ export const PUBLIC_META = {
     "Live aviation data is approximate and must not be used for navigation or operational decision-making.",
 } as const;
 
-export const SETTINGS_STORAGE_KEY = "final-approach-settings-v1";
+export const SETTINGS_STORAGE_KEY = "final-approach-settings-v2";

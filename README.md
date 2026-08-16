@@ -1,6 +1,6 @@
 # FINAL APPROACH
 
-A high-end local aviation display for a home under the Heathrow arrival flight path. FINAL APPROACH identifies aircraft approaching London Heathrow near a **North London observation point**, ranks likely arrivals with an explainable heuristic, and presents a cinematic live board suitable for a laptop, television, or Raspberry Pi kiosk.
+A high-end local aviation display for watching Heathrow arrivals from north London. FINAL APPROACH identifies aircraft approaching London Heathrow near **Alexandra Park**, ranks likely arrivals with an explainable heuristic, and presents a cinematic live board suitable for a laptop, television, or Raspberry Pi kiosk.
 
 > Live aviation data is approximate and must not be used for navigation or operational decision-making.
 
@@ -182,9 +182,9 @@ Map animation and trail length are capped for lighter GPUs; turn off radar anima
 
 ## Privacy
 
-- The UI labels the site **NORTH LONDON OBSERVATION POINT** — no street address.
-- Precise coordinates are hidden behind an explicit settings unlock + confirmation.
-- Do not commit `.env.local`.
+- The shipped observation point is **Alexandra Park**, a public park in north London — not a private address.
+- The UI labels the site **ALEXANDRA PARK**. Coordinates are hidden behind an explicit settings unlock + confirmation.
+- Do not commit `.env.local` if you override the point for personal use.
 - API keys stay server-side and are never logged intentionally.
 
 ## Provider terms and attribution
